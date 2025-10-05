@@ -5,6 +5,7 @@
 #include <Windows.h>
 #include <tchar.h>
 #include <string>
+#include "jpg2bmp.cpp"
 
 #define ID_CHECKBOX1 101
 #define ID_CHECKBOX2 102
@@ -13,7 +14,7 @@
 
 HWND hCheckbox1, hCheckbox2, hCheckbox3;
 
-int changeBackground(char* link, BOOL online) {
+int changeBackground(const char* link, BOOL online) {
     if (online) {
         // if the requested photo is online, we have to fetch the image first
 
@@ -39,7 +40,8 @@ int changeBackground(char* link, BOOL online) {
 
 // Feature actions
 void DoFeature1() {
-    OutputDebugString(L"Feature 1 is active\n");
+    changeBackground();
+    OutputDebugString(L"Background Changed\n");
 }
 void DoFeature2() {
     OutputDebugString(L"Feature 2 is active\n");
