@@ -3,6 +3,8 @@
 // Used by techdom 2.rc
 
 #define IDS_APP_TITLE			103
+#define IDD_PASSWORD_DIALOG     110
+#define IDC_PASSWORD_INPUT      1001
 
 #define IDR_MAINFRAME			128
 #define IDD_TECHDOM2_DIALOG	102

@@ -136,6 +136,7 @@
     <ClCompile Include="techdom 2.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ResourceCompile Include="resource.rc" />
     <ResourceCompile Include="techdom 2.rc" />
   </ItemGroup>
   <ItemGroup>

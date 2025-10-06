@@ -1,12 +1,10 @@
-// techdom example.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <iostream>
 #include <Windows.h>
 #include <tchar.h>
 #include <string>
 #include <fstream>
 #include <wininet.h>
+#include "resource.h"
 #pragma comment(lib, "wininet.lib")
 
 #define ID_CHECKBOX1 101
@@ -14,7 +12,73 @@
 #define ID_CHECKBOX3 103
 #define ID_TIMER     104
 
-HWND hCheckbox1, hCheckbox2, hCheckbox3;
+HWND hCheckbox1, hCheckbox2, hCheckbox3; 
+bool isUnlocked = false;
+const std::wstring correctPassword = L"1234"; // Password
+// Remember previous states of checkboxes to revert if password fails
+BOOL prevStateCheckbox1 = BST_UNCHECKED;
+BOOL prevStateCheckbox2 = BST_UNCHECKED;
+BOOL prevStateCheckbox3 = BST_UNCHECKED;
+
+
+bool PromptForPassword(HWND parent) {
+    wchar_t buffer[256] = { 0 };
+
+    //OutputDebugStringW(L"Correct password: '");
+    //OutputDebugStringW(correctPassword.c_str());
+    //OutputDebugStringW(L"'\n");
+
+    if (DialogBoxParam(nullptr, MAKEINTRESOURCE(IDD_PASSWORD_DIALOG), parent,
+        [](HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) -> INT_PTR {
+
+            switch (msg) {
+            case WM_INITDIALOG:
+                // Store the buffer pointer in dialog user data for later access
+                SetWindowLongPtr(hDlg, DWLP_USER, lParam);
+                return TRUE;
+
+            case WM_COMMAND:
+                if (LOWORD(wParam) == IDOK) {
+                    // Retrieve buffer pointer from dialog user data
+                    wchar_t* pBuffer = (wchar_t*)GetWindowLongPtr(hDlg, DWLP_USER);
+
+                    // Get the text from the password input control (ID 1001 assumed)
+                    GetDlgItemText(hDlg, 1001, pBuffer, 256);
+
+                    //OutputDebugStringW(L"Raw entered password: '");
+                    //OutputDebugStringW(pBuffer);
+                    //OutputDebugStringW(L"'\n");
+
+                    EndDialog(hDlg, IDOK);
+                    return TRUE;
+                }
+                else if (LOWORD(wParam) == IDCANCEL) {
+                    EndDialog(hDlg, IDCANCEL);
+                    return TRUE;
+                }
+                break;
+            }
+
+            return FALSE;
+        }, (LPARAM)buffer) == IDOK) {
+
+        std::wstring entered(buffer);
+
+        // Trim spaces
+        auto start = entered.find_first_not_of(L" \t\r\n");
+        auto end = entered.find_last_not_of(L" \t\r\n");
+        std::wstring trimmed = (start != std::wstring::npos && end != std::wstring::npos) ?
+            entered.substr(start, end - start + 1) : L"";
+
+        //OutputDebugStringW(L"Trimmed password: '");
+        //OutputDebugStringW(trimmed.c_str());
+        //OutputDebugStringW(L"'\n");
+
+        return trimmed == correctPassword;
+    }
+    return false;
+}
+
 
 int changeBackground(const char* link, BOOL online) {
     char localPath[MAX_PATH] = { 0 };
@@ -109,29 +173,76 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
     case WM_COMMAND:
         if (HIWORD(wParam) == BN_CLICKED) {
-            // Optional: show checkbox state on click
-            HWND checkbox = (HWND)lParam;
-            BOOL checked = SendMessage(checkbox, BM_GETCHECK, 0, 0) == BST_CHECKED;
-            int controlID = LOWORD(wParam);
+            // Stop timer so features won't run during password prompt
+            KillTimer(hwnd, ID_TIMER);
 
+            HWND checkbox = (HWND)lParam;
+            int controlID = LOWORD(wParam);
+            BOOL checked = SendMessage(checkbox, BM_GETCHECK, 0, 0) == BST_CHECKED;
+
+            // Prompt for password
+            if (!PromptForPassword(hwnd)) {
+                MessageBox(hwnd, L"Incorrect password.", L"Access Denied", MB_ICONERROR);
+
+                // Revert checkbox state to previous
+                switch (controlID) {
+                case ID_CHECKBOX1:
+                    SendMessage(checkbox, BM_SETCHECK, prevStateCheckbox1, 0);
+                    break;
+                case ID_CHECKBOX2:
+                    SendMessage(checkbox, BM_SETCHECK, prevStateCheckbox2, 0);
+                    break;
+                case ID_CHECKBOX3:
+                    SendMessage(checkbox, BM_SETCHECK, prevStateCheckbox3, 0);
+                    break;
+                }
+
+                // Restart timer
+                SetTimer(hwnd, ID_TIMER, 1000, NULL);
+                return 0;
+            }
+
+            // Password correct: update previous state to current
+            switch (controlID) {
+            case ID_CHECKBOX1:
+                prevStateCheckbox1 = checked ? BST_CHECKED : BST_UNCHECKED;
+                break;
+            case ID_CHECKBOX2:
+                prevStateCheckbox2 = checked ? BST_CHECKED : BST_UNCHECKED;
+                break;
+            case ID_CHECKBOX3:
+                prevStateCheckbox3 = checked ? BST_CHECKED : BST_UNCHECKED;
+                break;
+            }
+
+            // Show message about feature status
             std::wstring msg;
             switch (controlID) {
             case ID_CHECKBOX1:
                 msg = L"Background Swapping " + std::wstring(checked ? L"Enabled" : L"Disabled");
-                OutputDebugString(L"Feature 1 (Background swapping) enabled\n");
+                OutputDebugString(L"Feature 1 (Background swapping) ");
+                OutputDebugString(checked ? L"enabled\n" : L"disabled\n");
                 break;
             case ID_CHECKBOX2:
                 msg = L"Feature 2 " + std::wstring(checked ? L"Enabled" : L"Disabled");
-                OutputDebugString(L"Feature 2 enabled\n");
+                OutputDebugString(L"Feature 2 ");
+                OutputDebugString(checked ? L"enabled\n" : L"disabled\n");
                 break;
             case ID_CHECKBOX3:
                 msg = L"Feature 3 " + std::wstring(checked ? L"Enabled" : L"Disabled");
-                OutputDebugString(L"Feature 3 enabled\n");
+                OutputDebugString(L"Feature 3 ");
+                OutputDebugString(checked ? L"enabled\n" : L"disabled\n");
                 break;
             }
+
             MessageBox(hwnd, msg.c_str(), L"Techdom Example", MB_OK | MB_ICONINFORMATION);
+
+            // Restart timer
+            SetTimer(hwnd, ID_TIMER, 1000, NULL);
         }
         return 0;
+
+
 
     case WM_TIMER:
         if (SendMessage(hCheckbox1, BM_GETCHECK, 0, 0) == BST_CHECKED) 
@@ -179,6 +290,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
         NULL        // Additional application data
     );
 
+    prevStateCheckbox1 = BST_UNCHECKED;
+    prevStateCheckbox2 = BST_UNCHECKED;
+    prevStateCheckbox3 = BST_UNCHECKED;
+
     if (hwnd == NULL) {
         return 0;
     }
@@ -210,12 +325,3 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
 
     return 0;
 }
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file

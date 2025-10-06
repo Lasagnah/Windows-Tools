@@ -5,6 +5,10 @@
     {
       "AbsoluteMoniker": "D:0:0:{9660C067-0E25-449E-8DBB-D53740215C91}|techdom 2\\techdom 2.vcxproj|C:\\Users\\matts\\source\\repos\\techdom 2\\Windows-Tools\\techdom 2\\techdom 2.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{9660C067-0E25-449E-8DBB-D53740215C91}|techdom 2\\techdom 2.vcxproj|solutionrelative:techdom 2\\techdom 2.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9660C067-0E25-449E-8DBB-D53740215C91}|techdom 2\\techdom 2.vcxproj|C:\\Users\\matts\\source\\repos\\techdom 2\\Windows-Tools\\techdom 2\\Resource.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{9660C067-0E25-449E-8DBB-D53740215C91}|techdom 2\\techdom 2.vcxproj|solutionrelative:techdom 2\\Resource.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -14,8 +18,21 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 1,
           "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Resource.h",
+              "DocumentMoniker": "C:\\Users\\matts\\source\\repos\\techdom 2\\Windows-Tools\\techdom 2\\Resource.h",
+              "RelativeDocumentMoniker": "techdom 2\\Resource.h",
+              "ToolTip": "C:\\Users\\matts\\source\\repos\\techdom 2\\Windows-Tools\\techdom 2\\Resource.h",
+              "RelativeToolTip": "techdom 2\\Resource.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAASAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-10-06T19:05:52.69Z",
+              "EditorCaption": ""
+            },
             {
               "$type": "Document",
               "DocumentIndex": 0,
@@ -24,7 +41,7 @@
               "RelativeDocumentMoniker": "techdom 2\\techdom 2.cpp",
               "ToolTip": "C:\\Users\\matts\\source\\repos\\techdom 2\\Windows-Tools\\techdom 2\\techdom 2.cpp",
               "RelativeToolTip": "techdom 2\\techdom 2.cpp",
-              "ViewState": "AgIAAFEAAAAAAAAAAAAAAFkAAABPAAAAAAAAAA==",
+              "ViewState": "AgIAANMAAAAAAAAAAAAkwOEAAAAeAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2025-10-05T23:48:23.175Z",
               "EditorCaption": ""
