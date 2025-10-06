@@ -5,19 +5,66 @@
 #include <Windows.h>
 #include <tchar.h>
 #include <string>
-#include "jpg2bmp.cpp"
+#include <fstream>
+#include <wininet.h>
+#pragma comment(lib, "wininet.lib")
 
 #define ID_CHECKBOX1 101
 #define ID_CHECKBOX2 102
 #define ID_CHECKBOX3 103
-#define ID_TIMER     201
+#define ID_TIMER     104
 
 HWND hCheckbox1, hCheckbox2, hCheckbox3;
 
 int changeBackground(const char* link, BOOL online) {
-    if (online) {
-        // if the requested photo is online, we have to fetch the image first
+    char localPath[MAX_PATH] = { 0 };
 
+    if (online) {
+        // Download image from URL and save locally
+        HINTERNET hInternet = InternetOpenA("WallpaperDownloader", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
+        if (!hInternet) {
+            std::cerr << "InternetOpenA failed." << std::endl;
+            return -1;
+        }
+
+        HINTERNET hFile = InternetOpenUrlA(hInternet, link, NULL, 0, INTERNET_FLAG_RELOAD, 0);
+        if (!hFile) {
+            std::cerr << "InternetOpenUrlA failed." << std::endl;
+            InternetCloseHandle(hInternet);
+            return -1;
+        }
+
+        // Get temp path and create a filename
+        if (!GetTempPathA(MAX_PATH, localPath)) {
+            std::cerr << "GetTempPathA failed." << std::endl;
+            InternetCloseHandle(hFile);
+            InternetCloseHandle(hInternet);
+            return -1;
+        }
+        strcat_s(localPath, MAX_PATH, "temp_wallpaper.jpg");
+
+        // Open local file for writing
+        std::ofstream output(localPath, std::ios::binary);
+        if (!output.is_open()) {
+            std::cerr << "Failed to open local file for writing." << std::endl;
+            InternetCloseHandle(hFile);
+            InternetCloseHandle(hInternet);
+            return -1;
+        }
+
+        // Download loop
+        char buffer[4096];
+        DWORD bytesRead = 0;
+        while (InternetReadFile(hFile, buffer, sizeof(buffer), &bytesRead) && bytesRead != 0) {
+            output.write(buffer, bytesRead);
+        }
+
+        output.close();
+        InternetCloseHandle(hFile);
+        InternetCloseHandle(hInternet);
+
+        // Now point to the downloaded local file
+        link = localPath;
     }
     
     // Set the wallpaper
@@ -40,7 +87,7 @@ int changeBackground(const char* link, BOOL online) {
 
 // Feature actions
 void DoFeature1() {
-    changeBackground();
+    changeBackground("C:\\Users\\matts\\Downloads\\ffxiv wallpaper.bmp", FALSE);
     OutputDebugString(L"Background Changed\n");
 }
 void DoFeature2() {
@@ -57,7 +104,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
     switch (uMsg) {
     case WM_CREATE:
         // Set up a timer that ticks every 1000ms (1 second)
-        SetTimer(hwnd, ID_TIMER, 1000, NULL);
+        SetTimer(hwnd, ID_TIMER, 60000, NULL);
         return 0;
 
     case WM_COMMAND:
@@ -71,12 +118,15 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             switch (controlID) {
             case ID_CHECKBOX1:
                 msg = L"Feature 1 " + std::wstring(checked ? L"Enabled" : L"Disabled");
+                OutputDebugString(L"Feature 1 enabled\n");
                 break;
             case ID_CHECKBOX2:
                 msg = L"Feature 2 " + std::wstring(checked ? L"Enabled" : L"Disabled");
+                OutputDebugString(L"Feature 2 enabled\n");
                 break;
             case ID_CHECKBOX3:
                 msg = L"Feature 3 " + std::wstring(checked ? L"Enabled" : L"Disabled");
+                OutputDebugString(L"Feature 3 enabled\n");
                 break;
             }
             MessageBox(hwnd, msg.c_str(), L"Feature Toggle", MB_OK | MB_ICONINFORMATION);
@@ -84,14 +134,14 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         return 0;
 
     case WM_TIMER:
-        // Called every 1 second
-        if (SendMessage(hCheckbox1, BM_GETCHECK, 0, 0) == BST_CHECKED)
-            DoFeature1();
-        if (SendMessage(hCheckbox2, BM_GETCHECK, 0, 0) == BST_CHECKED)
-            DoFeature2();
-        if (SendMessage(hCheckbox3, BM_GETCHECK, 0, 0) == BST_CHECKED)
+        if (SendMessage(hCheckbox1, BM_GETCHECK, 0, 0) == BST_CHECKED) 
+            DoFeature1(); 
+        if (SendMessage(hCheckbox2, BM_GETCHECK, 0, 0) == BST_CHECKED) 
+            DoFeature2(); 
+        if (SendMessage(hCheckbox3, BM_GETCHECK, 0, 0) == BST_CHECKED) 
             DoFeature3();
         return 0;
+
 
     case WM_DESTROY:
         KillTimer(hwnd, ID_TIMER);
@@ -134,17 +184,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
     }
 
     // Create checkboxes
-    CreateWindow(L"BUTTON", L"Feature 1",
+    hCheckbox1 = CreateWindow(L"BUTTON", L"Feature 1",
         WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX,
         20, 30, 150, 30,
         hwnd, (HMENU)ID_CHECKBOX1, hInstance, NULL);
 
-    CreateWindow(L"BUTTON", L"Feature 2",
+    hCheckbox2 = CreateWindow(L"BUTTON", L"Feature 2",
         WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX,
         20, 70, 150, 30,
         hwnd, (HMENU)ID_CHECKBOX2, hInstance, NULL);
 
-    CreateWindow(L"BUTTON", L"Feature 3",
+    hCheckbox3 = CreateWindow(L"BUTTON", L"Feature 3",
         WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX,
         20, 110, 150, 30,
         hwnd, (HMENU)ID_CHECKBOX3, hInstance, NULL);
