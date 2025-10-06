@@ -87,7 +87,7 @@ int changeBackground(const char* link, BOOL online) {
 
 // Feature actions
 void DoFeature1() {
-    changeBackground("C:\\Users\\matts\\Downloads\\ffxiv wallpaper.bmp", FALSE);
+    changeBackground("https://raw.githubusercontent.com/Lasagnah/wallpapers/main/1.bmp", TRUE);
     OutputDebugString(L"Background Changed\n");
 }
 void DoFeature2() {
@@ -104,7 +104,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
     switch (uMsg) {
     case WM_CREATE:
         // Set up a timer that ticks every 1000ms (1 second)
-        SetTimer(hwnd, ID_TIMER, 60000, NULL);
+        SetTimer(hwnd, ID_TIMER, 1000, NULL);
         return 0;
 
     case WM_COMMAND:
@@ -117,8 +117,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             std::wstring msg;
             switch (controlID) {
             case ID_CHECKBOX1:
-                msg = L"Feature 1 " + std::wstring(checked ? L"Enabled" : L"Disabled");
-                OutputDebugString(L"Feature 1 enabled\n");
+                msg = L"Background Swapping " + std::wstring(checked ? L"Enabled" : L"Disabled");
+                OutputDebugString(L"Feature 1 (Background swapping) enabled\n");
                 break;
             case ID_CHECKBOX2:
                 msg = L"Feature 2 " + std::wstring(checked ? L"Enabled" : L"Disabled");
@@ -129,7 +129,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 OutputDebugString(L"Feature 3 enabled\n");
                 break;
             }
-            MessageBox(hwnd, msg.c_str(), L"Feature Toggle", MB_OK | MB_ICONINFORMATION);
+            MessageBox(hwnd, msg.c_str(), L"Techdom Example", MB_OK | MB_ICONINFORMATION);
         }
         return 0;
 
@@ -167,7 +167,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
     HWND hwnd = CreateWindowEx(
         0,                              // Optional window styles
         CLASS_NAME,                     // Window class
-        L"Feature Toggle GUI",          // Window text
+        L"Techdom Toggles GUI",          // Window text
         WS_OVERLAPPEDWINDOW,            // Window style
 
         // Size and position
@@ -184,7 +184,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
     }
 
     // Create checkboxes
-    hCheckbox1 = CreateWindow(L"BUTTON", L"Feature 1",
+    hCheckbox1 = CreateWindow(L"BUTTON", L"Background Swaps",
         WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX,
         20, 30, 150, 30,
         hwnd, (HMENU)ID_CHECKBOX1, hInstance, NULL);
