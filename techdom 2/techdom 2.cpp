@@ -5,6 +5,9 @@
 #include <fstream>
 #include <wininet.h>
 #include "resource.h"
+#include <vector>
+#include <random>
+#include <fstream>
 #pragma comment(lib, "wininet.lib")
 
 #define ID_CHECKBOX1 101
@@ -19,7 +22,27 @@ const std::wstring correctPassword = L"1234"; // Password
 BOOL prevStateCheckbox1 = BST_UNCHECKED;
 BOOL prevStateCheckbox2 = BST_UNCHECKED;
 BOOL prevStateCheckbox3 = BST_UNCHECKED;
+std::vector<std::string> links = {};
 
+int getLinks() {
+    std::ifstream file("links.txt");
+
+    if (!file.is_open()) {
+        OutputDebugStringW(L"Failed to Open File (Links).\n");
+        return 1;
+    }
+
+    std::string line;
+    while (std::getline(file, line)) {
+        if (!line.empty()) {  // Optional: skip empty lines
+            links.push_back(line);
+        }
+    }
+
+    file.close();  // Always a good habit
+    OutputDebugStringW(L"Got Links.\n");
+    return 0;
+}
 
 bool PromptForPassword(HWND parent) {
     wchar_t buffer[256] = { 0 };
@@ -151,7 +174,14 @@ int changeBackground(const char* link, BOOL online) {
 
 // Feature actions
 void DoFeature1() {
-    changeBackground("https://raw.githubusercontent.com/Lasagnah/wallpapers/main/1.bmp", TRUE);
+    std::random_device rd;  // Non-deterministic seed
+    std::mt19937 gen(rd()); // Mersenne Twister engine
+    std::uniform_int_distribution<> dist(0, links.size() - 1);
+
+    // Step 3: Pick a random link
+    std::string random_link = links[dist(gen)];
+
+    changeBackground(random_link.c_str(), TRUE);
     OutputDebugString(L"Background Changed\n");
 }
 void DoFeature2() {
@@ -266,6 +296,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
     const wchar_t CLASS_NAME[] = L"FeatureToggleWindowClass";
+    
+    getLinks();
 
     WNDCLASS wc = {};
     wc.lpfnWndProc = WindowProc;
