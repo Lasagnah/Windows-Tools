@@ -426,14 +426,12 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
-techdom 2/x64/Debug/vc143.idb
-x64/Debug/techdom 2.pdb
-techdom 2/x64/Debug/vc143.pdb
-techdom 2/x64/Debug/techdom 2.tlog/CL.read.1.tlog
-techdom 2/x64/Debug/techdom 2.log
-techdom 2/x64/Debug/techdom 2.ilk
+
+x64/*
+techdom 2/x64/*
 .vs/techdom 2/v17/ipch/AutoPCH/12f98cc0cb20a183/TECHDOM 2.ipch
 .vs/techdom 2/v17/DocumentLayout.json
 .vs/techdom 2/v17/DocumentLayout.backup.json
 .vs/techdom 2/v17/Browse.VC.db
 .vs/techdom 2/v17/.suo
+
