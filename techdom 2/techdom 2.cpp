@@ -17,7 +17,7 @@
 
 HWND hCheckbox1, hCheckbox2, hCheckbox3; 
 bool isUnlocked = false;
-const std::wstring correctPassword = L"1234"; // Password
+std::wstring correctPassword = L"1234"; // Default Password
 // Remember previous states of checkboxes to revert if password fails
 BOOL prevStateCheckbox1 = BST_UNCHECKED;
 BOOL prevStateCheckbox2 = BST_UNCHECKED;
@@ -44,6 +44,46 @@ int getLinks() {
     return 0;
 }
 
+
+int getPassword() {
+    std::ifstream file("password.txt", std::ios::binary);
+    if (!file.is_open()) {
+        OutputDebugStringW(L"Failed to Open File (Password).\n");
+        return 1;
+    }
+
+    // Read entire file contents into a UTF-8 string
+    std::string utf8Content((std::istreambuf_iterator<char>(file)),
+        std::istreambuf_iterator<char>());
+
+    file.close();
+
+    if (utf8Content.empty()) {
+        OutputDebugStringW(L"Password file is empty.\n");
+        return 2;
+    }
+
+    // Convert from UTF-8 to UTF-16 (wstring) using Windows API
+    int wideCharCount = MultiByteToWideChar(CP_UTF8, 0, utf8Content.c_str(), -1, nullptr, 0);
+    if (wideCharCount == 0) {
+        OutputDebugStringW(L"Failed to convert UTF-8 to wide string.\n");
+        return 3;
+    }
+
+    std::wstring widePassword(wideCharCount - 1, 0); // -1 to exclude null terminator
+    MultiByteToWideChar(CP_UTF8, 0, utf8Content.c_str(), -1, &widePassword[0], wideCharCount);
+
+    // Trim whitespace (optional but good practice)
+    size_t start = widePassword.find_first_not_of(L" \t\r\n");
+    size_t end = widePassword.find_last_not_of(L" \t\r\n");
+    if (start != std::wstring::npos && end != std::wstring::npos)
+        correctPassword = widePassword.substr(start, end - start + 1);
+    else
+        correctPassword = L"";  // All whitespace
+
+    OutputDebugStringW(L"Got Password.\n");
+    return 0;
+}
 bool PromptForPassword(HWND parent) {
     wchar_t buffer[256] = { 0 };
 
@@ -298,6 +338,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
     const wchar_t CLASS_NAME[] = L"FeatureToggleWindowClass";
     
     getLinks();
+    getPassword();
 
     WNDCLASS wc = {};
     wc.lpfnWndProc = WindowProc;
